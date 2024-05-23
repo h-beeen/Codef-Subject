@@ -2,7 +2,6 @@ package io.codef.subject.presentation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.codef.subject.application.ConnectedIdService;
-import io.codef.subject.application.EasyCodefBankAccountService;
 import io.codef.subject.application.dto.AddAccountRequest;
 import io.codef.subject.application.dto.ConnectedIdRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import java.io.UnsupportedEncodingException;
 @RequestMapping("/api/v1")
 public class ConnectedIdController {
 
-    private final EasyCodefBankAccountService easyCodefBankAccountService;
     private final ConnectedIdService connectedIdService;
 
     /**
