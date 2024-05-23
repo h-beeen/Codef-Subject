@@ -17,7 +17,6 @@ public class EasyCodefConfig {
         EasyCodef easyCodef = new EasyCodef();
         easyCodef.setClientInfoForDemo(DEMO_CLIENT_ID, DEMO_CLIENT_SECRET);
         easyCodef.setPublicKey(PUBLIC_KEY);
-
         return easyCodef;
     }
 }
