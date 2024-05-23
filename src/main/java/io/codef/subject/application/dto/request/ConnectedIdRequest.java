@@ -1,4 +1,4 @@
-package io.codef.subject.application.dto;
+package io.codef.subject.application.dto.request;
 
 public record ConnectedIdRequest(
         String organizationCode,

@@ -1,9 +1,9 @@
 package io.codef.subject.presentation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.codef.subject.application.ConnectedIdService;
-import io.codef.subject.application.dto.AddAccountRequest;
-import io.codef.subject.application.dto.ConnectedIdRequest;
+import io.codef.subject.application.AuthenticationService;
+import io.codef.subject.application.dto.request.AddAccountRequest;
+import io.codef.subject.application.dto.request.ConnectedIdRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,24 +15,24 @@ import java.io.UnsupportedEncodingException;
 @RequestMapping("/api/v1")
 public class ConnectedIdController {
 
-    private final ConnectedIdService connectedIdService;
+    private final AuthenticationService authenticationService;
 
     /**
      * 커넥티드 아이디 신규 생성 API
      */
     @PostMapping("/connectedId")
-    public ResponseEntity<Void> initConnectedId(@RequestBody ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        connectedIdService.initConnectedId(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> initConnectedId(@RequestBody ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        String connectedIdResponse = authenticationService.initConnectedId(request);
+        return ResponseEntity.ok(connectedIdResponse);
     }
 
     /**
      * 커넥티드 아이디에 신규 계정 추가
      */
     @PostMapping("/connectedId/add")
-    public ResponseEntity<Void> addAccountOnConnectedId(@RequestBody AddAccountRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        connectedIdService.addAccountOnConnectedId(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> addAccountOnConnectedId(@RequestBody AddAccountRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        String result = authenticationService.addAccountOnConnectedId(request);
+        return ResponseEntity.ok(result);
     }
 
     /**
@@ -40,7 +40,7 @@ public class ConnectedIdController {
      */
     @GetMapping("/connectedId")
     public ResponseEntity<String> addAccountOnConnectedId() throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        String result = connectedIdService.getConnectedIds();
+        String result = authenticationService.getConnectedIds();
         return ResponseEntity.ok(result);
     }
 }

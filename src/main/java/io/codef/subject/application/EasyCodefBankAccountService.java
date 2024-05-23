@@ -3,7 +3,7 @@ package io.codef.subject.application;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.codef.api.EasyCodef;
 import io.codef.api.EasyCodefServiceType;
-import io.codef.subject.application.dto.TransactionRequest;
+import io.codef.subject.application.dto.request.TransactionRequest;
 import io.codef.subject.domain.ConnectedId;
 import io.codef.subject.infra.persistence.ConnectedIdRepository;
 import lombok.RequiredArgsConstructor;
