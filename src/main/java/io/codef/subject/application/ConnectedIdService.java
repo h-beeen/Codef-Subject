@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.codef.api.EasyCodef;
 import io.codef.api.EasyCodefServiceType;
 import io.codef.api.EasyCodefUtil;
+import io.codef.subject.application.dto.AddAccountRequest;
 import io.codef.subject.application.dto.ConnectedIdRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,36 @@ public class ConnectedIdService {
 
         HashMap<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("accountList", accountList);
-        
+
         codef.createAccount(EasyCodefServiceType.DEMO, parameterMap);
+    }
+
+    public void addAccountOnConnectedId(AddAccountRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        List<HashMap<String, Object>> accountList = new ArrayList<>();
+        HashMap<String, Object> accountMap = new HashMap<>();
+
+        accountMap.put("id", request.id());
+        accountMap.put("organization", request.organizationCode());
+        accountMap.put("countryCode", "KR");
+        accountMap.put("businessType", "BK");
+        accountMap.put("clientType", "P");
+        accountMap.put("loginType", "1");
+
+        try {
+            accountMap.put("password", EasyCodefUtil.encryptRSA(request.password(), codef.getPublicKey()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        accountList.add(accountMap);
+
+        HashMap<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("accountList", accountList);
+        parameterMap.put("connectedId", request.connectedId());
+        String s = codef.addAccount(EasyCodefServiceType.DEMO, parameterMap);
+        System.out.println("s = " + s);
+    }
+
+    public String getConnectedIds() throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        return codef.getConnectedIdList(EasyCodefServiceType.DEMO);
     }
 }

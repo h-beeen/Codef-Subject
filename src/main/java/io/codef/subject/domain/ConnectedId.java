@@ -13,4 +13,8 @@ public class ConnectedId {
     private Long id;
 
     private String connectedId;
+
+    private String organizationCode;
+
+    private String organizationName;
 }
