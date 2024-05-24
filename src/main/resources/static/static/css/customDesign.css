@@ -1,0 +1,102 @@
+@font-face {
+    font-family: 'NotoSansKRBlack';
+    src: url('../font/notosanskr_medium.otf') format('opentype');
+}
+
+body {
+    font-family: 'NotoSansKRBlack', sans-serif;
+    background-color: #670FD7; /* Flow Color */
+    word-spacing: -2px;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 40px;
+}
+
+.custom-container {
+    background-color: #f8f8ff; /* 연한 연두색 */
+    padding: 20px;
+    border-radius: 20px; /* 라운딩 */
+    margin: 30px 0;
+    text-align: center;
+}
+
+.custom-box {
+    background-color: #e3e0e8; /* third Color */
+    padding: 20px;
+    border-radius: 20px; /* 라운딩 */
+    margin: 20px 0;
+    text-align: center;
+}
+
+.input-group {
+    height: 80px;
+    width: 40%;
+    justify-content: center;
+    align-items: center;
+}
+
+.jumbotron {
+    background-color: #f8f8ff;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.lead {
+    font-size: 18px;
+    margin-bottom: 50px;
+}
+
+img {
+    width: 180px;
+    display: block;
+    margin: auto auto 30px;
+}
+
+.btn-lg {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    background-color: #B39EE4; /* Flow Sub color */
+    border-color: #B39EE4; /* Flow Sub color */
+    color: #000000; /* white */
+}
+
+.btn-secondary {
+    background-color: #B39EE4; /* Flow Sub color */
+    border-color: #B39EE4; /* Flow Sub color */
+    color: #000000; /* white */
+}
+
+.btn-secondary:active,
+.btn-secondary:focus,
+.btn-lg:active,
+.btn-lg:focus {
+    background-color: #B39EE4;
+    border-color: #670FD7;
+    color: #000000;
+}
+
+.btn-secondary:hover,
+.btn-lg:hover {
+    background-color: #ffffff; /* 연두색 */
+    border-color: #670FD7;
+    color: #000000;
+}
+
+.input-group:active,
+.input-group:focus {
+    border-color: #464646; /* Flow Sub color */
+}
+
+.table td {
+    padding: 4px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+

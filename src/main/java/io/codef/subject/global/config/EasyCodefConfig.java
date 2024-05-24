@@ -1,5 +1,6 @@
 package io.codef.subject.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.codef.api.EasyCodef;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,5 +25,10 @@ public class EasyCodefConfig {
         easyCodef.setClientInfoForDemo(demoClientId, demoClientSecret);
         easyCodef.setPublicKey(publicKey);
         return easyCodef;
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }
