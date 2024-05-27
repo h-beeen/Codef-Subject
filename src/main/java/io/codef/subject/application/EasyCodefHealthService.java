@@ -6,18 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.codef.api.EasyCodef;
 import io.codef.api.EasyCodefServiceType;
 import io.codef.subject.application.dto.request.HealthCheckRequest;
-import io.codef.subject.application.dto.response.MultipleResponse;
-import io.codef.subject.infra.persistence.ConnectedIdRepository;
+import io.codef.subject.application.dto.response.MultipleAuthResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.env.PropertyResolver;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -27,47 +23,85 @@ public class EasyCodefHealthService {
 
     private final ObjectMapper objectMapper;
     private final EasyCodef codef;
-    private final ConnectedIdRepository connectedIdRepository;
-    private final PropertyResolver propertyResolver;
 
-    private CompletableFuture<String> createAsyncRequest(HashMap<String, Object> parameterMap, int delay) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                // 딜레이 적용
-                TimeUnit.MILLISECONDS.sleep(delay);
-                // 비동기 작업 실행
-                String s = codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
-                log.warn("request Product = {}", s);
-            } catch (InterruptedException | UnsupportedEncodingException | JsonProcessingException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
-    }
-
-    public MultipleResponse requestHealthSimpleAuth(HealthCheckRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        HashMap<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("id", UUID.randomUUID().toString());
+    private static void putSimpleAuthInfo(HashMap<String, Object> parameterMap) {
         parameterMap.put("organization", "0002");
         parameterMap.put("loginType", "5");
         parameterMap.put("loginTypeLevel", "1");
+        parameterMap.put("inquiryType", "4");
+        parameterMap.put("type", "1");
+    }
+
+    private static void putSimpleAuthUserInfo(HealthCheckRequest request, HashMap<String, Object> parameterMap) {
         parameterMap.put("userName", request.userName());
         parameterMap.put("phoneNo", request.phoneNo());
         parameterMap.put("identity", request.identity());
-        parameterMap.put("inquiryType", "4");
+        parameterMap.put("telecom", request.telecom());
+    }
+
+    public MultipleAuthResponse requestHealthSimpleAuth(HealthCheckRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        HashMap<String, Object> parameterMap = new HashMap<>();
+        String uuid = UUID.randomUUID().toString();
+
+        putSimpleAuthInfo(parameterMap);
+        putSimpleAuthUserInfo(request, parameterMap);
+        parameterMap.put("id", uuid);
         parameterMap.put("searchStartYear", "2024");
         parameterMap.put("searchEndYear", "2024");
-        parameterMap.put("type", "1");
-        parameterMap.put("telecom", request.telecom());
 
         String result2024 = codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
 
-        // JSON 문자열을 JsonNode로 파싱
+        log.warn("{}", result2024);
         JsonNode jsonNode = objectMapper.readTree(result2024);
 
         String transactionId = jsonNode.get("data").get("jti").asText();
         String twoWayTimestamp = jsonNode.get("data").get("twoWayTimestamp").asText();
+        String jobIndex = jsonNode.get("data").get("jobIndex").asText();
+        String threadIndex = jsonNode.get("data").get("threadIndex").asText();
 
-        return new MultipleResponse(transactionId, twoWayTimestamp);
+        return new MultipleAuthResponse(uuid, jobIndex, threadIndex, transactionId, twoWayTimestamp);
+    }
+
+    public String requestHealthCheckResponse(MultipleAuthResponse authResponse, HealthCheckRequest request, String targetYear) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        HashMap<String, Object> parameterMap = new HashMap<>();
+
+        putSimpleAuthInfo(parameterMap);
+        putSimpleAuthUserInfo(request, parameterMap);
+        parameterMap.put("id", authResponse.id());
+        parameterMap.put("searchStartYear", targetYear);
+        parameterMap.put("searchEndYear", targetYear);
+
+        return codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
+    }
+
+    public String requestCertification(MultipleAuthResponse authResponse, HealthCheckRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        HashMap<String, Object> parameterMap = new HashMap<>();
+        HashMap<String, Object> twoWayInfo = new HashMap<>();
+        HashMap<String, Object> extraInfo = new HashMap<>();
+
+        putSimpleAuthInfo(parameterMap);
+        putSimpleAuthUserInfo(request, parameterMap);
+        parameterMap.put("id", authResponse.id());
+        parameterMap.put("searchStartYear", "2024");
+        parameterMap.put("searchEndYear", "2024");
+
+        parameterMap.put("simpleAuth", "1");
+        parameterMap.put("is2Way", true);
+
+        twoWayInfo.put("jobIndex", Long.parseLong(authResponse.jobIndex()));
+        twoWayInfo.put("threadIndex", Long.parseLong(authResponse.threadIndex()));
+        twoWayInfo.put("jti", authResponse.transactionId());
+        twoWayInfo.put("twoWayTimestamp", Long.parseLong(authResponse.timestamp()));
+        twoWayInfo.put("continue2Way", true);
+        twoWayInfo.put("method", "simpleAuth");
+        extraInfo.put("commSimpleAuth", "");
+        twoWayInfo.put("extraInfo", extraInfo);
+        parameterMap.put("twoWayInfo", twoWayInfo);
+
+        String result = codef.requestCertification(productUrl, EasyCodefServiceType.DEMO, parameterMap);
+
+        log.warn("request = {}", parameterMap);
+        log.warn("{}", result);
+        return result;
     }
 }
