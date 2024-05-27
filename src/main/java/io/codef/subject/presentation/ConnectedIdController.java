@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,9 +22,9 @@ public class ConnectedIdController {
      * 커넥티드 아이디 신규 생성 API
      */
     @PostMapping("/connectedId")
-    public ResponseEntity<String> initConnectedId(@RequestBody ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        String connectedIdResponse = authenticationService.initConnectedId(request);
-        return ResponseEntity.ok(connectedIdResponse);
+    public ResponseEntity<Map> initConnectedId(@RequestBody ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        Map result = authenticationService.initConnectedId(request);
+        return ResponseEntity.ok(result);
     }
 
     /**

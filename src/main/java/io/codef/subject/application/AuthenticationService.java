@@ -1,6 +1,7 @@
 package io.codef.subject.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.codef.api.EasyCodef;
 import io.codef.api.EasyCodefServiceType;
 import io.codef.api.EasyCodefUtil;
@@ -16,6 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -23,8 +25,9 @@ import java.util.List;
 public class AuthenticationService {
 
     private final EasyCodef codef;
+    private final ObjectMapper objectMapper;
 
-    public String initConnectedId(ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    public Map initConnectedId(ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         List<HashMap<String, Object>> accountList = new ArrayList<>();
         HashMap<String, Object> accountMap = new HashMap<>();
 
@@ -45,7 +48,8 @@ public class AuthenticationService {
         HashMap<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("accountList", accountList);
 
-        return codef.createAccount(EasyCodefServiceType.DEMO, parameterMap);
+        String result = codef.createAccount(EasyCodefServiceType.DEMO, parameterMap);
+        return objectMapper.readValue(result, Map.class);
     }
 
     public String addAccountOnConnectedId(AddAccountRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {

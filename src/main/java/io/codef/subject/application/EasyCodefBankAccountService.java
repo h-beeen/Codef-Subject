@@ -1,6 +1,7 @@
 package io.codef.subject.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.codef.api.EasyCodef;
 import io.codef.api.EasyCodefServiceType;
 import io.codef.subject.application.dto.request.TransactionRequest;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -18,21 +20,23 @@ import java.util.HashMap;
 public class EasyCodefBankAccountService {
 
     private final EasyCodef codef;
+    private final ObjectMapper objectMapper;
 
     @Value("${codef.connected-id}")
     private String connectedId;
 
-    public String getBankAccountResponse(String organizationCode) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    public Map getBankAccountResponse(String organizationCode) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         HashMap<String, Object> parameterMap = new HashMap<>();
 
         parameterMap.put("connectedId", connectedId);
         parameterMap.put("organization", organizationCode);
 
         String productUrl = "/v1/kr/bank/p/account/account-list";
-        return codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
+        String result = codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
+        return objectMapper.readValue(result, Map.class);
     }
 
-    public String getAccountTransactionResponse(TransactionRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    public Map getAccountTransactionResponse(TransactionRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         HashMap<String, Object> parameterMap = new HashMap<>();
 
         parameterMap.put("connectedId", connectedId);
@@ -43,6 +47,7 @@ public class EasyCodefBankAccountService {
         parameterMap.put("orderBy", "0");
 
         String productUrl = "/v1/kr/bank/p/account/transaction-list";
-        return codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
+        String result = codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
+        return objectMapper.readValue(result, Map.class);
     }
 }

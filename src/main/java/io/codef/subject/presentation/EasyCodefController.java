@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -39,12 +40,12 @@ public class EasyCodefController {
      * request : [GET] localhost:8080/api/v1/easy/bank?organizationCode=0020
      */
     @PostMapping("/bank/accountList")
-    public ResponseEntity<String> getBankAccountResponse(@RequestParam String organizationCode) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    public ResponseEntity<Map> getBankAccountResponse(@RequestParam String organizationCode) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         return ResponseEntity.ok(easyCodefBankAccountService.getBankAccountResponse(organizationCode));
     }
 
     @PostMapping("/bank/transaction")
-    public ResponseEntity<String> getBankTransactionResponse(@RequestBody TransactionRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    public ResponseEntity<Map> getBankTransactionResponse(@RequestBody TransactionRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         return ResponseEntity.ok(easyCodefBankAccountService.getAccountTransactionResponse(request));
     }
 
