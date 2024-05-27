@@ -10,11 +10,15 @@ import io.codef.subject.application.dto.response.MultipleAuthResponse;
 import io.codef.subject.application.dto.response.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -51,74 +55,47 @@ public class EasyCodefController {
     }
 
     /**
-     * 최근 1년 단건 조회
+     * 최근 5년 건강검진 기록 조회
      */
-
     @PostMapping("/health-check")
     public ResponseEntity<String> getHealthCheckResponse(@RequestBody HealthCheckRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException, ExecutionException {
 
         // 1. 인증 응답 받기
         MultipleAuthResponse authResponse = easyCodefHealthService.requestHealthSimpleAuth(request);
 
-        // 2. 2023, 2022, 2021, 2020년에 대한 비동기 요청
-        Thread.sleep(700);
-        log.warn("2023 Request");
-        CompletableFuture<String> future2023 = CompletableFuture.supplyAsync(() -> {
-            try {
-                return easyCodefHealthService.requestHealthCheckResponse(authResponse, request, "2023");
-            } catch (UnsupportedEncodingException | JsonProcessingException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        List<String> years = Arrays.asList("2023", "2022", "2021", "2020");
+        List<CompletableFuture<String>> futures = requestHealthCheckResponses(authResponse, request, years);
 
-//        log.warn("2022 Request");
-//        Thread.sleep(300);
-//        CompletableFuture<String> future2022 = CompletableFuture.supplyAsync(() -> {
-//            try {
-//                return easyCodefHealthService.requestHealthCheckResponse(authResponse, request, "2022");
-//            } catch (UnsupportedEncodingException | JsonProcessingException | InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        });
-//
-//        log.warn("2021 Request");
-//        Thread.sleep(300);
-//        CompletableFuture<String> future2021 = CompletableFuture.supplyAsync(() -> {
-//            try {
-//                return easyCodefHealthService.requestHealthCheckResponse(authResponse, request, "2021");
-//            } catch (UnsupportedEncodingException | JsonProcessingException | InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        });
-//
-//        log.warn("2020 Request");
-//        Thread.sleep(300);
-//        CompletableFuture<String> future2020 = CompletableFuture.supplyAsync(() -> {
-//            try {
-//                return easyCodefHealthService.requestHealthCheckResponse(authResponse, request, "2020");
-//            } catch (UnsupportedEncodingException | JsonProcessingException | InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        });
-
-        //15초 대기
-        log.warn("15초 남음");
-        Thread.sleep(10000);
-        log.warn("5초 남음");
-        Thread.sleep(3000);
-        log.warn("2초 남음");
-        Thread.sleep(2000);
-
-        log.warn("인증 요청");
+        Thread.sleep(15000);
         String result2024 = easyCodefHealthService.requestCertification(authResponse, request);
 
+        String future2023 = futures.get(0).get();
+        String future2022 = futures.get(1).get();
+        String future2021 = futures.get(2).get();
+        String future2020 = futures.get(3).get();
+
         // 모든 비동기 작업이 완료될 때까지 대기
-        CompletableFuture.allOf(future2023);
-//        CompletableFuture.allOf(future2023, future2022, future2021, future2020).join();
+        CompletableFuture.allOf().join();
 
         // 결과 결합
-        String result = result2024 + future2023.get();
+        String result = String.format("%s,%s,%s,%s,%s", result2024, future2023, future2022, future2021, future2020);
 
-        return ResponseEntity.ok(future2023.get());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        return new ResponseEntity<>(result, headers, HttpStatus.OK);
+    }
+
+
+    private List<CompletableFuture<String>> requestHealthCheckResponses(MultipleAuthResponse authResponse, HealthCheckRequest request, List<String> years) {
+        return years.stream()
+                .map(year -> CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return easyCodefHealthService.requestHealthCheckResponse(authResponse, request, year);
+                    } catch (UnsupportedEncodingException | JsonProcessingException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }))
+                .toList();
     }
 }
