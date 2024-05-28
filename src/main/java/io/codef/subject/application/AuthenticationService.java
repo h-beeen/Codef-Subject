@@ -7,17 +7,12 @@ import io.codef.api.EasyCodefUtil;
 import io.codef.subject.application.dto.request.ConnectedIdRequest;
 import io.codef.subject.application.dto.response.TokenResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,22 +26,12 @@ public class AuthenticationService {
     /**
      * 커넥티드 아이디 신규 생성
      */
-    public String initConnectedId(ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+    @SneakyThrows
+    public String initConnectedId(ConnectedIdRequest request) {
         List<HashMap<String, Object>> accountList = initAccountList(request);
         HashMap<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("accountList", accountList);
         return codef.createAccount(EasyCodefServiceType.DEMO, parameterMap);
-    }
-
-    /**
-     * 커넥티드 아이디 계정 추가
-     */
-    public String addAccountOnConnectedId(ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
-        List<HashMap<String, Object>> accountList = initAccountList(request);
-        HashMap<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("accountList", accountList);
-        parameterMap.put("connectedId", request.connectedId());
-        return codef.addAccount(EasyCodefServiceType.DEMO, parameterMap);
     }
 
     /**
@@ -57,6 +42,18 @@ public class AuthenticationService {
     }
 
     /**
+     * 커넥티드 아이디 계정 추가
+     */
+    @SneakyThrows
+    public String addAccountOnConnectedId(ConnectedIdRequest request) {
+        List<HashMap<String, Object>> accountList = initAccountList(request);
+        HashMap<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("accountList", accountList);
+        parameterMap.put("connectedId", request.connectedId());
+        return codef.addAccount(EasyCodefServiceType.DEMO, parameterMap);
+    }
+
+    /**
      * 토큰 발급
      */
     public TokenResponse getToken() throws IOException {
@@ -64,8 +61,8 @@ public class AuthenticationService {
         return new TokenResponse(result);
     }
 
-    
-    private List<HashMap<String, Object>> initAccountList(ConnectedIdRequest request) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    @SneakyThrows
+    private List<HashMap<String, Object>> initAccountList(ConnectedIdRequest request) {
         HashMap<String, Object> accountMap = new HashMap<>();
 
         accountMap.put("id", request.id());
