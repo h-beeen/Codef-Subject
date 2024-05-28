@@ -10,16 +10,15 @@ import io.codef.subject.application.dto.response.MultipleAuthResponse;
 import io.codef.subject.application.dto.response.TokenResponse;
 import io.codef.subject.global.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -64,43 +63,20 @@ public class EasyCodefController extends JsonUtil {
     /**
      * 최근 5년 건강검진 기록 조회
      */
+    @SneakyThrows
     @PostMapping("/health-check")
-    public ResponseEntity<String> getHealthCheckResponse(@RequestBody HealthCheckRequest request) throws Exception {
+    public ResponseEntity<String> getHealthCheckResponse(@RequestBody HealthCheckRequest request) {
         MultipleAuthResponse authResponse = easyCodefHealthService.requestSimpleAuthToNhis(request);
-
-        final List<String> years = Arrays.asList("2023", "2022", "2021", "2020");
-        List<CompletableFuture<String>> futures = requestHealthCheckResponses(authResponse, request, years);
-
+        List<CompletableFuture<String>> asyncResponses = easyCodefHealthService.requestHealthCheckResponses(authResponse, request);
         Thread.sleep(15000);
         String currentResult = easyCodefHealthService.requestCertification(authResponse, request);
 
-        String lastResult = futures.stream()
-                .map(future -> {
-                    try {
-                        return future.get();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    } catch (ExecutionException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
+        String lastResult = asyncResponses.stream()
+                .map(CompletableFuture::join)
                 .collect(Collectors.joining(","));
 
         CompletableFuture.allOf().join();
         String result = String.format("%s,%s", currentResult, lastResult);
         return serializeResponse(result);
-    }
-
-
-    private List<CompletableFuture<String>> requestHealthCheckResponses(MultipleAuthResponse authResponse, HealthCheckRequest request, List<String> years) {
-        return years.stream()
-                .map(year -> CompletableFuture.supplyAsync(() -> {
-                    try {
-                        return easyCodefHealthService.requestHealthCheckResponse(authResponse, request, year);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }))
-                .toList();
     }
 }
