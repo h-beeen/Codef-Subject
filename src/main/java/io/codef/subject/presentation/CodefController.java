@@ -1,29 +1,35 @@
 package io.codef.subject.presentation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.codef.subject.application.CodefBankAccountService;
 import io.codef.subject.application.dto.request.TransactionRequest;
+import io.codef.subject.global.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/code")
-public class CodefController {
+public class CodefController extends JsonUtil {
 
     private final CodefBankAccountService codefBankAccountService;
 
+
+    /**
+     * @param organizationCode Bearer Token & ConnectedId 기반 은행 계좌 조회
+     */
     @PostMapping("/bank/accountList")
-    public ResponseEntity<Map<String, Object>> getBankAccountResponse(@RequestParam String organizationCode) throws JsonProcessingException, UnsupportedEncodingException {
-        return codefBankAccountService.getBankAccountResponses(organizationCode);
+    public ResponseEntity<String> getBankAccountResponse(@RequestParam String organizationCode) {
+        String result = codefBankAccountService.getBankAccountResponses(organizationCode);
+        return serializeResponse(result);
     }
 
+    /**
+     * @param request BearerToken & ConnectedId 기반 수시 입출 내역 조회
+     */
     @PostMapping("/bank/transaction")
-    public ResponseEntity<Map<String, Object>> getBankTransactionResponse(@RequestBody TransactionRequest request) throws JsonProcessingException, UnsupportedEncodingException {
-        return codefBankAccountService.getBankTransactionResponses(request);
+    public ResponseEntity<String> getBankTransactionResponse(@RequestBody TransactionRequest request) {
+        String result = codefBankAccountService.getBankTransactionResponses(request);
+        return serializeResponse(result);
     }
 }

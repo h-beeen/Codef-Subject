@@ -8,10 +8,9 @@ import io.codef.subject.application.dto.request.HealthCheckRequest;
 import io.codef.subject.application.dto.request.TransactionRequest;
 import io.codef.subject.application.dto.response.MultipleAuthResponse;
 import io.codef.subject.application.dto.response.TokenResponse;
+import io.codef.subject.global.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,15 +18,13 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/easy")
-public class EasyCodefController {
+public class EasyCodefController extends JsonUtil {
 
     private final EasyCodefBankAccountService easyCodefBankAccountService;
     private final AuthenticationService authenticationService;
@@ -40,13 +37,15 @@ public class EasyCodefController {
      * request : [GET] localhost:8080/api/v1/easy/bank?organizationCode=0020
      */
     @PostMapping("/bank/accountList")
-    public ResponseEntity<Map> getBankAccountResponse(@RequestParam String organizationCode) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        return ResponseEntity.ok(easyCodefBankAccountService.getBankAccountResponse(organizationCode));
+    public ResponseEntity<String> getBankAccountResponse(@RequestParam String organizationCode) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        String result = easyCodefBankAccountService.getBankAccountResponse(organizationCode);
+        return serializeResponse(result);
     }
 
     @PostMapping("/bank/transaction")
-    public ResponseEntity<Map> getBankTransactionResponse(@RequestBody TransactionRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        return ResponseEntity.ok(easyCodefBankAccountService.getAccountTransactionResponse(request));
+    public ResponseEntity<String> getBankTransactionResponse(@RequestBody TransactionRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        String result = easyCodefBankAccountService.getAccountTransactionResponse(request);
+        return serializeResponse(result);
     }
 
     @PostMapping("/token")
@@ -59,7 +58,7 @@ public class EasyCodefController {
      * 최근 5년 건강검진 기록 조회
      */
     @PostMapping("/health-check")
-    public ResponseEntity<String> getHealthCheckResponse(@RequestBody HealthCheckRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException, ExecutionException {
+    public ResponseEntity<String> getHealthCheckResponse(@RequestBody HealthCheckRequest request) throws Exception {
 
         // 1. 인증 응답 받기
         MultipleAuthResponse authResponse = easyCodefHealthService.requestHealthSimpleAuth(request);
@@ -80,11 +79,7 @@ public class EasyCodefController {
 
         // 결과 결합
         String result = String.format("%s,%s,%s,%s,%s", result2024, future2023, future2022, future2021, future2020);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/json");
-
-        return new ResponseEntity<>(result, headers, HttpStatus.OK);
+        return serializeResponse(result);
     }
 
 
@@ -93,7 +88,7 @@ public class EasyCodefController {
                 .map(year -> CompletableFuture.supplyAsync(() -> {
                     try {
                         return easyCodefHealthService.requestHealthCheckResponse(authResponse, request, year);
-                    } catch (UnsupportedEncodingException | JsonProcessingException | InterruptedException e) {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 }))

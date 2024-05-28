@@ -31,54 +31,41 @@ public class AuthenticationService {
     /**
      * 커넥티드 아이디 신규 생성
      */
-    public String initConnectedId(ConnectedIdRequest request) {
+    public String initConnectedId(ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         List<HashMap<String, Object>> accountList = initAccountList(request);
         HashMap<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("accountList", accountList);
-        try {
-            return codef.createAccount(EasyCodefServiceType.DEMO, parameterMap);
-        } catch (UnsupportedEncodingException | JsonProcessingException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        return codef.createAccount(EasyCodefServiceType.DEMO, parameterMap);
     }
 
     /**
      * 커넥티드 아이디 계정 추가
      */
-    public String addAccountOnConnectedId(ConnectedIdRequest request) {
+    public String addAccountOnConnectedId(ConnectedIdRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         List<HashMap<String, Object>> accountList = initAccountList(request);
         HashMap<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("accountList", accountList);
         parameterMap.put("connectedId", request.connectedId());
-        try {
-            return codef.addAccount(EasyCodefServiceType.DEMO, parameterMap);
-        } catch (UnsupportedEncodingException | JsonProcessingException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        return codef.addAccount(EasyCodefServiceType.DEMO, parameterMap);
     }
 
     /**
      * 보유 커넥티드 아이디 전체 조회
      */
-    public String getConnectedIds() {
-        try {
-            return codef.getConnectedIdList(EasyCodefServiceType.DEMO);
-        } catch (UnsupportedEncodingException | JsonProcessingException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+    public String getConnectedIds() throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        return codef.getConnectedIdList(EasyCodefServiceType.DEMO);
     }
 
-    public TokenResponse getToken() {
-        String result = null;
-        try {
-            result = codef.requestToken(EasyCodefServiceType.DEMO);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    /**
+     * 토큰 발급
+     */
+    public TokenResponse getToken() throws IOException {
+        String result = codef.requestToken(EasyCodefServiceType.DEMO);
         return new TokenResponse(result);
     }
 
-    private List<HashMap<String, Object>> initAccountList(ConnectedIdRequest request) {
+    
+    private List<HashMap<String, Object>> initAccountList(ConnectedIdRequest request) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         HashMap<String, Object> accountMap = new HashMap<>();
 
         accountMap.put("id", request.id());
@@ -87,21 +74,7 @@ public class AuthenticationService {
         accountMap.put("businessType", "BK");
         accountMap.put("clientType", "P");
         accountMap.put("loginType", "1");
-        try {
-            accountMap.put("password", EasyCodefUtil.encryptRSA(request.password(), codef.getPublicKey()));
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchPaddingException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalBlockSizeException e) {
-            throw new RuntimeException(e);
-        } catch (BadPaddingException e) {
-            throw new RuntimeException(e);
-        }
+        accountMap.put("password", EasyCodefUtil.encryptRSA(request.password(), codef.getPublicKey()));
 
         return List.of(accountMap);
     }
